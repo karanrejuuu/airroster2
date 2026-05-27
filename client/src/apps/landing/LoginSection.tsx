@@ -27,7 +27,11 @@ export function LoginSection() {
     setError('');
     try {
       const role = await login(email, password);
-      navigate(redirectFor(role), { replace: true });
+      const next = redirectFor(role);
+      navigate(next, { replace: true });
+      window.setTimeout(() => {
+        if (window.location.pathname === '/') window.location.assign(next);
+      }, 150);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed');
     } finally {

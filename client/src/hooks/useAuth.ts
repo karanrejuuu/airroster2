@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api, post } from '../lib/api';
+import { api, post, setAuthToken } from '../lib/api';
 import type { CrewMember, User, UserRole } from '../types';
 
 type AuthState = {
@@ -26,12 +26,14 @@ export const useAuth = create<AuthState>((set) => ({
     }
   },
   login: async (email, password) => {
-    const session = await post<{ user: User; profile: CrewMember }>('/api/auth/login', { email, password });
+    const session = await post<{ token: string; user: User; profile: CrewMember }>('/api/auth/login', { email, password });
+    setAuthToken(session.token);
     set({ user: session.user, profile: session.profile, loading: false });
     return session.user.role;
   },
   logout: async () => {
     await post('/api/auth/logout');
+    setAuthToken(null);
     set({ user: null, profile: null, loading: false });
   }
 }));

@@ -4,12 +4,28 @@ export class ApiError extends Error {
   }
 }
 
+const authTokenKey = 'airroster_token';
+
+export function getAuthToken() {
+  return window.localStorage.getItem(authTokenKey);
+}
+
+export function setAuthToken(token: string | null) {
+  if (token) {
+    window.localStorage.setItem(authTokenKey, token);
+  } else {
+    window.localStorage.removeItem(authTokenKey);
+  }
+}
+
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = getAuthToken();
   const response = await fetch(path, {
     ...options,
     credentials: 'include',
     headers: {
       ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers
     }
   });

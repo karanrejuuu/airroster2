@@ -23,7 +23,9 @@ export function clearAuthCookie(res: Response) {
 }
 
 export function verifyJWT(req: Request, res: Response, next: NextFunction) {
-  const token = req.cookies[cookieName] as string | undefined;
+  const authHeader = req.get('authorization');
+  const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice('Bearer '.length) : undefined;
+  const token = (req.cookies[cookieName] as string | undefined) || bearerToken;
   if (!token) return res.status(401).json({ error: 'Unauthorised' });
 
   try {

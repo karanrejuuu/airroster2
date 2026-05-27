@@ -20,7 +20,7 @@ authRouter.post('/login', (req, res) => {
   const token = signUser({ id: user.id, email: user.email, role: user.role });
   setAuthCookie(res, token);
   const profile = getProfile(user.id);
-  res.json({ user: { id: user.id, email: user.email, role: user.role }, profile });
+  res.json({ token, user: { id: user.id, email: user.email, role: user.role }, profile });
 });
 
 authRouter.post('/logout', (_req, res) => {
