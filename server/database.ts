@@ -1,7 +1,9 @@
 import Database from 'better-sqlite3';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 
-const dbPath = fileURLToPath(new URL('./database.sqlite', import.meta.url));
+const dbPath = process.env.VERCEL
+  ? '/tmp/airroster.sqlite'
+  : process.env.DB_PATH || resolve(process.cwd(), 'server/database.sqlite');
 
 export const db = new Database(dbPath);
 db.pragma('foreign_keys = ON');

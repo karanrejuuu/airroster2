@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { pathToFileURL } from 'node:url';
 import { db, initSchema } from './database.js';
 
 initSchema();
@@ -103,7 +104,9 @@ function haversine(from: string, to: string) {
   return Math.round(12742 * Math.asin(Math.sqrt(h)));
 }
 
-const tx = db.transaction(() => {
+export function seedDatabase() {
+  initSchema();
+  const tx = db.transaction(() => {
   for (const table of ['crew_assignments', 'leave_requests', 'flight_routes', 'flights', 'crew', 'airlines', 'airports']) {
     db.prepare(`DELETE FROM ${table}`).run();
     db.prepare(`DELETE FROM sqlite_sequence WHERE name = ?`).run(table);
@@ -221,8 +224,20 @@ const tx = db.transaction(() => {
   leaveStmt.run(leaveCrew.get('nina.joshi@airroster.com'), isoDate(addDays(now, -2)), isoDate(addDays(now, -1)), 'sick', 'approved', 'Medical recovery', 1, new Date().toISOString());
   leaveStmt.run(leaveCrew.get('aakash.joshi@airroster.com'), isoDate(addDays(now, 5)), isoDate(addDays(now, 6)), 'emergency', 'rejected', 'Operational coverage required', 2, new Date().toISOString());
   leaveStmt.run(leaveCrew.get('priya.george@airroster.com'), isoDate(addDays(now, 4)), isoDate(addDays(now, 4)), 'annual', 'pending', 'Personal day', null, null);
-});
+  });
 
-tx();
+  tx();
+}
 
-console.log('AirRoster seed complete: 10 airports, 2 airlines, 22 crew, 8 flights, 56 routes.');
+export function seedDatabaseIfEmpty() {
+  initSchema();
+  const crewCount = db.prepare('SELECT COUNT(*) AS count FROM crew').get() as { count: number };
+  if (crewCount.count === 0) {
+    seedDatabase();
+  }
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  seedDatabase();
+  console.log('AirRoster seed complete: 10 airports, 2 airlines, 22 crew, 8 flights, 56 routes.');
+}
